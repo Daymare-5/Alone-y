@@ -1,0 +1,640 @@
+<!DOCTYPE html><html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>七夕·心动匹配</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://code.iconify.design/3/3.1.1/iconify.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+    
+    :root {
+      --primary-light: #ffeff3;
+      --primary-dark: #f8d7e3;
+      --accent-purple: #e6d4f9;
+      --accent-gold: #f9e8c0;
+      --active-coral: #ff9f9f;
+      --inactive-gray: #e0e0e0;
+    }
+    
+    body {
+      background: linear-gradient(135deg, #f5f7fa 0%, #e4e7f1 100%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      font-family: 'Noto Sans SC', sans-serif;
+    }
+    
+    .app-container {
+      width: 375px;
+      height: 812px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: linear-gradient(to bottom, var(--primary-light), var(--primary-dark));
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      border-radius: 8px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      position: relative;
+    }
+    
+    .fixed-section {
+      flex-shrink: 0;
+    }
+    
+    .content-flex {
+      flex: 1;
+      overflow-y: auto;
+      min-height: 0;
+      padding: 20px;
+    }
+    
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    
+    .header {
+      height: 56px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.3);
+      backdrop-filter: blur(5px);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      font-weight: 500;
+      color: #6d6875;
+    }
+    
+    .footer {
+      height: 80px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.3);
+      backdrop-filter: blur(5px);
+      border-top: 1px solid rgba(0, 0, 0, 0.05);
+      padding: 0 20px;
+    }
+    
+    .step-indicators {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    
+    .step-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: var(--inactive-gray);
+    }
+    
+    .step-indicator.active {
+      background-color: var(--active-coral);
+      transform: scale(1.2);
+    }
+    
+    .btn-continue {
+      width: 100%;
+      height: 48px;
+      background: var(--accent-purple);
+      border: none;
+      border-radius: 24px;
+      color: #6d6875;
+      font-weight: 500;
+      font-size: 16px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+      transition: all 0.3s ease;
+    }
+    
+    .btn-continue:hover {
+      background: #d4c0f0;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .card {
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+    }
+    
+    .title {
+      font-size: 24px;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 20px;
+      color: #6d6875;
+      line-height: 1.3;
+    }
+    
+    .subtitle {
+      font-size: 16px;
+      text-align: center;
+      color: #8a7f8f;
+      margin-bottom: 30px;
+      font-weight: 300;
+      line-height: 1.5;
+    }
+    
+    .input-group {
+      margin-bottom: 20px;
+    }
+    
+    .input-label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 14px;
+      color: #6d6875;
+      font-weight: 500;
+    }
+    
+    .input-field {
+      width: 100%;
+      height: 48px;
+      padding: 0 15px;
+      background: rgba(255, 255, 255, 0.8);
+      border: 1px solid rgba(0, 0, 0, 0.05);
+      border-radius: 12px;
+      font-size: 16px;
+      box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.03);
+      transition: all 0.3s ease;
+    }
+    
+    .input-field:focus {
+      outline: none;
+      box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.05), 0 0 0 2px var(--accent-purple);
+    }
+    
+    .avatar-upload {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 20px 0;
+    }
+    
+    .avatar-preview {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.8);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      border: 2px dashed var(--accent-purple);
+      margin-bottom: 15px;
+      position: relative;
+    }
+    
+    .tag-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    
+    .tag {
+      padding: 8px 16px;
+      background: rgba(255, 255, 255, 0.8);
+      border-radius: 20px;
+      font-size: 14px;
+      color: #6d6875;
+      border: 1px solid rgba(0, 0, 0, 0.05);
+      transition: all 0.2s ease;
+    }
+    
+    .tag.selected {
+      background: var(--accent-purple);
+      color: #6d6875;
+      font-weight: 500;
+    }
+    
+    .interest-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-top: 10px;
+    }
+    
+    .interest-item {
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.8);
+      border-radius: 12px;
+      text-align: center;
+      font-size: 14px;
+      color: #6d6875;
+      border: 1px solid rgba(0, 0, 0, 0.05);
+      transition: all 0.2s ease;
+    }
+    
+    .interest-item.selected {
+      background: var(--accent-gold);
+      color: #6d6875;
+      font-weight: 500;
+    }
+    
+    .question-card {
+      margin-bottom: 20px;
+    }
+    
+    .question-text {
+      font-size: 18px;
+      font-weight: 500;
+      color: #6d6875;
+      margin-bottom: 20px;
+      line-height: 1.4;
+    }
+    
+    .option {
+      padding: 16px;
+      background: rgba(255, 255, 255, 0.8);
+      border-radius: 12px;
+      margin-bottom: 12px;
+      font-size: 15px;
+      color: #6d6875;
+      border: 1px solid rgba(0, 0, 0, 0.05);
+      transition: all 0.2s ease;
+    }
+    
+    .option.selected {
+      background: var(--accent-purple);
+      color: #6d6875;
+      font-weight: 500;
+    }
+    
+    .result-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      animation: fadeIn 1.5s ease-out;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .selfie-frame {
+      width: 240px;
+      height: 240px;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 3px solid var(--accent-gold);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      margin: 20px 0 30px;
+      padding-top: 40px;
+      background: rgba(255, 255, 255, 0.8);
+    }
+    
+    .message-box {
+      background: rgba(255, 255, 255, 0.8);
+      border-radius: 20px;
+      padding: 25px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    }
+    
+    .message-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: #ff6b81;
+      margin-bottom: 15px;
+    }
+    
+    .message-text {
+      font-size: 16px;
+      color: #6d6875;
+      line-height: 1.6;
+      font-weight: 300;
+    }
+    
+    .step {
+      display: none;
+    }
+    
+    .step.active {
+      display: block;
+    }
+    
+    .icon {
+      font-size: 24px;
+      color: var(--accent-purple);
+    }
+
+  /* 1. 加载动画容器 - 全屏覆盖 */
+  .loader-container {
+    /* 固定定位：相对于视口定位 */
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    
+    /* 背景半透明黑色，模糊底层内容 */
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(2px); /* 可选：模糊背景内容 */
+    
+    /* 层级最高，确保覆盖所有内容 */
+    z-index: 9999;
+    
+    /* 居中对齐内部的加载动画 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  /* 2. 加载动画样式（圆形旋转） */
+  .loader {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #f3f3f3; /* 浅色边框 */
+    border-top: 5px solid #4CAF50; /* 强调色边框 */
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  /* 旋转动画 */
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  /* 3. 隐藏加载动画的类 */
+  .hidden {
+    display: none !important; /* 强制隐藏 */
+  }
+  </style>
+</head>
+
+<body>
+  <div class="app-container">
+    <!-- 标题栏 -->
+    <header class="fixed-section header">
+      <span id="step-title">欢迎</span>
+    </header>
+
+    <!-- 内容区 -->
+    <main class="content-flex hide-scrollbar">
+      <!-- 步骤1: 欢迎页 -->
+      <section id="step1" class="step active">
+        <div class="card">
+          <h1 class="title">七夕·心动匹配</h1>
+          <p class="subtitle">在这个特别的日子<br>开启一段浪漫的寻觅之旅<br>遇见那个命中注定的人</p>
+          
+          <div class="flex justify-center mb-8">
+            <span class="iconify icon" data-icon="mdi:heart-multiple"></span>
+          </div>
+          
+          <div class="input-group">
+            <label class="input-label">你的名字</label>
+            <input id="id-name" class="input-field" placeholder="输入你喜欢的称呼">
+          </div>
+        </div>
+        
+        <div class="card">
+          <h2 class="text-lg font-medium text-center mb-4" style="color: #6d6875;">七夕寄语</h2>
+          <p class="text-center text-gray-600 leading-relaxed">
+            爱情总是在不期而遇中降临，<br>
+            在这个七夕，让我们找到那个对的人。
+          </p>
+        </div>
+      </section>
+      
+      <!-- 步骤2: 个人资料表单 -->
+      <section id="step2" class="step">
+        <div class="card">
+          <h1 class="title">个人档案</h1>
+          <p class="subtitle">帮助我们了解你，找到最合适的匹配<br>（请从下列标签中选择一个或多个）</p>
+          
+          <div class="input-group">
+            <label class="input-label">性格特点</label>
+            <div class="tag-container">
+              <div class="tag">温柔细腻</div>
+              <div class="tag">热情开朗</div>
+              <div class="tag">独立自信</div>
+              <div class="tag">幽默风趣</div>
+              <div class="tag">安静内敛</div>
+              <div class="tag">创意无限</div>
+            </div>
+          </div>
+          
+          <div class="input-group" style="margin-top: 40px;">
+            <label class="input-label">兴趣爱好</label>
+            <div class="interest-grid">
+              <div class="interest-item">阅读写作</div>
+              <div class="interest-item">旅行摄影</div>
+              <div class="interest-item">音乐舞蹈</div>
+              <div class="interest-item">美食烹饪</div>
+              <div class="interest-item">运动健身</div>
+              <div class="interest-item">电影戏剧</div>
+              <div class="interest-item">其他</div>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      <!-- 步骤3: 互动游戏 -->
+      <section id="step3" class="step">
+        <div class="card">
+          <h1 class="title">偏好测试</h1>
+          <p class="subtitle">通过以下问题了解你的偏好，<br>帮助我们找到合适的匹配。<br>（请谨慎选择）</p>
+          
+          <div class="question-card">
+            <p class="question-text">当你感到压力时，最想做什么？</p>
+            <div class="option">一个人安静地待着</div>
+            <div class="option">找朋友倾诉聊天</div>
+            <div class="option">运动或做喜欢的事</div>
+            <div class="option">享受美食或购物</div>
+          </div>
+          
+          <div class="question-card" style="margin-top: 30px;">
+            <p class="question-text">你理想中的休息日是什么样子？</p>
+            <div class="option">宅在家里看书看电影</div>
+            <div class="option">和朋友一起聚会</div>
+            <div class="option">探索新地方新事物</div>
+            <div class="option">专注自己的兴趣爱好</div>
+          </div>
+          
+          <div class="question-card" style="margin-top: 30px;">
+            <p class="question-text">什么会让你感到真正的快乐？</p>
+            <div class="option">完成自己的目标</div>
+            <div class="option">被重要的人认可</div>
+            <div class="option">帮助他人</div>
+            <div class="option">学习新技能</div>
+          </div>
+        </div>
+      </section>
+      
+      <!-- 步骤4: 结果页 -->
+      <section id="step4" class="step">
+        <div class="result-content">
+          <div class="selfie-frame">     
+              <h2 class="text-lg font-medium text-center mb-4" style="color: #6d6875;">七夕快乐，亲爱的自己</h2>
+              <p class="text-center text-gray-600 leading-relaxed">
+                爱自己，不是自私，而是对生命最深的敬意。<br>
+                在这个七夕，让我们学会与自己温柔相处。
+              </p>
+          </div>
+          
+          <div class="message-box">
+            <h2 class="message-title">致最珍贵的你：</h2>
+            <p id="result-message" class="message-text">
+              真正的浪漫不是寻找完美的人，<br>
+              而是学会以完美的眼光，<br>
+              欣赏那个不完美的自己。<br><br>
+              你值得被爱，值得被珍惜，<br>
+              值得这世间一切美好。<br>
+              在这个七夕，请记得：<br>
+              爱自己，是终身浪漫的开始。<br><br>
+              xxx，去享受这个属于你自己的七夕吧。
+            </p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <div class="loader-container hidden" id="loaderContainer">
+      <div class="loader"></div>
+    </div>
+
+    <!-- 底部栏 -->
+    <footer class="fixed-section footer">
+      <div class="step-indicators">
+        <div class="step-indicator active"></div>
+        <div class="step-indicator"></div>
+        <div class="step-indicator"></div>
+        <div class="step-indicator"></div>
+      </div>
+      <button id="btn-continue" class="btn-continue">开始旅程</button>
+    </footer>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const steps = document.querySelectorAll('.step');
+      const stepIndicators = document.querySelectorAll('.step-indicator');
+      const btnContinue = document.getElementById('btn-continue');
+      const stepTitle = document.getElementById('step-title');
+      let currentStep = 0;
+      
+      const stepTitles = ['欢迎', '自我简介', '更进一步', '匹配结果'];
+      const answers = [];
+      
+      // 更新步骤显示
+      function updateStepDisplay() {
+        steps.forEach((step, index) => {
+          step.classList.toggle('active', index === currentStep);
+        });
+        
+        stepIndicators.forEach((indicator, index) => {
+          indicator.classList.toggle('active', index === currentStep);
+        });
+        
+        stepTitle.textContent = stepTitles[currentStep];
+        
+        // 更新按钮文字
+        if (currentStep === steps.length - 1) {
+          document.getElementById('result-message').innerHTML = document.getElementById('result-message').innerHTML.replace("xxx", answers[0])
+          btnContinue.textContent = '重新开始';
+        } else if (currentStep === 0) {
+          btnContinue.textContent = '开始旅程';
+        } else {
+          btnContinue.textContent = '继续';
+        }
+      }
+      
+      function loadNextStep() {
+        updateStepDisplay();
+        
+        // 滚动到顶部
+        document.querySelector('.content-flex').scrollTop = 0;
+        // 方案2：如果目标元素无效，尝试页面整体滚动容器
+        if (window.scrollY > 0) {
+          document.body.scrollTop = 0;
+          document.documentElement.scrollTop = 0;
+        }
+      }
+
+      // 下一步按钮点击事件
+      btnContinue.addEventListener('click', function() {
+        if (currentStep < steps.length - 1) {
+          if (currentStep == 0) {
+            const name = document.getElementById('id-name').value.trim();
+            if (name.length > 0) {
+              answers.push(name);
+            } else {
+              alert("请输入你的昵称");
+              return;
+            }
+          } else if (currentStep == 1) {
+            const tag = document.querySelector('.tag-container > .selected');
+            const interest = document.querySelector('.interest-grid > .selected');
+            if (tag == null) {
+              alert("请至少选择一项性格特点");
+              return;
+            } else if (interest == null) {
+              alert("请至少选择一项兴趣爱好");
+              return;
+            }
+          } else {
+            const options = document.querySelectorAll('.option.selected');
+            if (options.length < 3) {
+              alert("请认真回答测试中的问题");
+              return;
+            } else {
+              // 加载动画
+              const loader = document.getElementById('loaderContainer');
+              loader.classList.remove('hidden');
+              setTimeout(() => {
+                loader.classList.add('hidden');
+                currentStep++;
+                loadNextStep();
+              }, 2000); // 3秒后隐藏（模拟加载耗时）
+              return;
+            }
+          }
+          currentStep++;
+        } else {
+          currentStep = 0;
+        }
+        loadNextStep();
+      });
+      
+      // 标签选择交互
+      document.querySelectorAll('.tag').forEach(tag => {
+        tag.addEventListener('click', function() {
+          this.classList.toggle('selected');
+        });
+      });
+      
+      // 兴趣选择交互
+      document.querySelectorAll('.interest-item').forEach(item => {
+        item.addEventListener('click', function() {
+          this.classList.toggle('selected');
+        });
+      });
+      
+      // 选项选择交互
+      document.querySelectorAll('.option').forEach(option => {
+        option.addEventListener('click', function() {
+          option.parentElement.querySelectorAll('.option').forEach(opt => {
+            opt.classList.remove('selected');
+          });
+          this.classList.add('selected');
+        });
+      });
+      
+      // 初始化步骤显示
+      updateStepDisplay();
+    });
+  </script>
+
+</body></html>

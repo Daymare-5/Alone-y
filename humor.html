@@ -573,9 +573,6 @@
                         <button class="btn btn-secondary" id="back-to-questions">
                             <i class="fas fa-arrow-left"></i> 返回思考
                         </button>
-                        <button class="btn btn-primary" id="share-reminder-btn">
-                            <i class="fas fa-share-alt"></i> 分享这份提醒
-                        </button>
                     </div>
                 </div>
             </div>
@@ -690,7 +687,6 @@
             document.getElementById('next-question-btn').addEventListener('click', handleNextQuestion);
             document.getElementById('back-to-welcome').addEventListener('click', () => goToStep(1));
             document.getElementById('back-to-questions').addEventListener('click', () => goToStep(2));
-            document.getElementById('share-reminder-btn').addEventListener('click', shareReminder);
             
             // 加载第一个问题
             loadQuestion(currentQuestionIndex);
@@ -806,53 +802,7 @@
                 goToStep(3);
             }
         }
-        
-        // 分享提醒
-        function shareReminder() {
-            const message = `在愚人节，让我们用思考为欢笑加上温度。
-
-🤔 玩笑前的小思考：
-1. 这个玩笑会让大家都开心吗？
-2. 公开场合的玩笑要特别小心
-3. 如果拿不准，可以选择更温和的方式
-4. 最好的幽默，是能让所有人都参与的欢乐
-
-幽默是礼物，尊重是包装。
-愚人节快乐！愿你的每一个玩笑都带着善意。
-
-#愚人节 #思考提醒 #幽默有温度`;
-
-            if (navigator.share) {
-                navigator.share({
-                    title: '愚人节思考提醒',
-                    text: message,
-                    url: window.location.href
-                }).catch(err => {
-                    console.log('分享失败:', err);
-                    copyToClipboard(message);
-                });
-            } else {
-                copyToClipboard(message);
-            }
-        }
-        
-        // 复制到剪贴板
-        function copyToClipboard(text) {
-            navigator.clipboard.writeText(text).then(() => {
-                const btn = document.getElementById('share-reminder-btn');
-                const originalHTML = btn.innerHTML;
-                btn.innerHTML = '<i class="fas fa-check"></i> 已复制到剪贴板';
-                btn.style.background = 'linear-gradient(135deg, #7BC9A5, #5AB58F)';
-                
-                setTimeout(() => {
-                    btn.innerHTML = originalHTML;
-                    btn.style.background = '';
-                }, 2000);
-            }).catch(err => {
-                console.error('复制失败:', err);
-                alert('请手动复制以下文字：\n\n' + text);
-            });
-        }
+   
     </script>
 </body>
 </html>
